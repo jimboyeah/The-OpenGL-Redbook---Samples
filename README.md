@@ -46,7 +46,7 @@ your OpenGL drivers are out of date, they'll probably fail spectacularly.
 - [深入游戏变速底层原理以及内核变速的实现](https://www.52pojie.cn/thread-951616-1-1.html)
 - [oglpg-8th-edition.7z](https://pan.baidu.com/s/1kVpv1MR)
 
-红宝书 1st、8th、9th MinGW + CMake 配置在各分支下：
+主分支为出版社原书 9th 配套代码，支持为红宝书 1st、8th、9th 配置 Sublime + MinGW + CMake 编译环境，请进入各分支下查看：
 
 - https://github.com/jimboyeah/The-OpenGL-Redbook---Samples/tree/redbook-samples-1.1
 - https://github.com/jimboyeah/The-OpenGL-Redbook---Samples/tree/redbook-samples-8th
