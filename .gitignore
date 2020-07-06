@@ -1,0 +1,7 @@
+*.o
+*.obj
+*.pdb
+!bin/media
+!build/lib
+build/CMakeFiles
+build/lib/glfw
