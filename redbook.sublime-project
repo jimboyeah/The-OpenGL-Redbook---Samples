@@ -1,0 +1,75 @@
+{
+	"build_systems":
+	[
+		{
+			"encoding": "utf8",
+			"env":
+			{
+				"PATH": "c:/MinGW/bin/;%PATH%"
+			},
+			"file_regex": "^  (.+)\\((\\d+)\\)(): ((?:fatal )?(?:error|warning) \\w+\\d\\d\\d\\d: .*) \\[.*$",
+			"name": "Demos (Windows)",
+			"quiet": true,
+			"shell_cmd": "cmake --build .",
+			"variants":
+			[
+				{
+					"name": "Unix Makefiles",
+					"shell_cmd": "cmake .. -G \"Unix Makefiles\""
+				},
+				{
+					"name": "Make Help",
+					"shell_cmd": "make clean"
+				},
+				{
+					"name": "clean",
+					"shell_cmd": "make clean"
+				},
+				{
+					"name": "clear all",
+					"shell_cmd": "del * /s /q"
+				},
+				{
+					"name": "Make",
+					"shell_cmd": "make all -j 8 BUILD_SHARED_LIBS=ON"
+				},
+				{
+					"name": "Clean & Make",
+					"shell_cmd": "make clean && make -DBUILD_SHARED_LIBS=ON"
+				}
+			],
+			"working_dir": "${project_path}/build"
+		}
+	],
+	"folders":
+	[
+		{
+			"path": "."
+		},
+		{
+			"path": "C:\\download\\OpenCV\\glfw-3.3.2"
+		},
+		{
+			"path": "C:\\download\\OpenCV\\glew-2.1.0"
+		},
+		{
+			"path": "C:\\download\\OpenCV\\freeglut-3.2.1"
+		},
+		{
+			"path": "C:\\download\\OpenCV\\glut-master"
+		},
+		{
+			"path": "C:\\download\\OpenCV\\OGLPG-9th-Edition"
+		},
+		{
+			"path": "C:\\download\\OpenCV\\glut-3.7"
+		}
+	],
+	"settings":
+	{
+		"cmake":
+		{
+			"build_folder": "${project_path}/build"
+		}
+	}
+}
