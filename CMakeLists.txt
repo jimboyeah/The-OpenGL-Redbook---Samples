@@ -90,5 +90,10 @@ message(STATUS)
 #     add_demo(${name} ${item})
 # endforeach(item)
 
-add_demo( 01-viewport demos/01-viewport.cpp )
+aux_source_directory("demos/" demos)
+foreach(item ${demos})
+    string(REGEX REPLACE ".*/\(.*\)" "\\1" name ${item})
+    message(STATUS ${name})
+    add_demo(${name} ${item})
+endforeach(item)
 
