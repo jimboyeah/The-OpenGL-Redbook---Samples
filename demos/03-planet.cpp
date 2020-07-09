@@ -8,8 +8,14 @@
  */
 #include <GL/glut.h>
 #include <cstdlib>
+#include <cstdio>
 
 static int year = 0, day = 0;
+static float _near = 1.0;
+static float _far = 20.0;
+static float _fov = 60.0;
+static int _win;
+static int _winsize = 2;
 
 void init(void) 
 {
@@ -37,7 +43,8 @@ void reshape (int w, int h)
    glViewport (0, 0, (GLsizei) w, (GLsizei) h); 
    glMatrixMode (GL_PROJECTION);
    glLoadIdentity ();
-   gluPerspective(60.0, (GLfloat) w/(GLfloat) h, 1.0, 20.0);
+   gluPerspective(_fov, (GLfloat) w/(GLfloat) h, _near, _far);
+   printf("_fov %f, _near %f, _far %f\n", _fov, _near, _far);
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
    gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
@@ -46,21 +53,43 @@ void reshape (int w, int h)
 void keyboard (unsigned char key, int x, int y)
 {
    switch (key) {
+      case '[':
+         _far -= 0.2;
+         _winsize = -_winsize;
+         break;
+      case ']':
+         _far += 0.2;
+         _winsize = -_winsize;
+         break;
+      case 'w':
+         _near += .2;
+         _far += .2;
+         _winsize = -_winsize;
+         break;
+      case 's':
+         _near -= .2;
+         _far -= .2;
+         _winsize = -_winsize;
+         break;
+      case 'q':
+         _fov += 1;
+         _winsize = -_winsize;
+         break;
+      case 'e':
+         _fov -= 1;
+         _winsize = -_winsize;
+         break;
       case 'd':
          day = (day + 10) % 360;
-         glutPostRedisplay();
          break;
       case 'D':
          day = (day - 10) % 360;
-         glutPostRedisplay();
          break;
       case 'y':
          year = (year + 5) % 360;
-         glutPostRedisplay();
          break;
       case 'Y':
          year = (year - 5) % 360;
-         glutPostRedisplay();
          break;
       case 27:
          exit(0);
@@ -68,6 +97,9 @@ void keyboard (unsigned char key, int x, int y)
       default:
          break;
    }
+   glutPostRedisplay();
+   glutReshapeWindow(500 + _winsize, 500 + _winsize);
+   glutPositionWindow(100-(_winsize>0? 1:0), 100-(_winsize>0? 1:0));
 }
 
 int main(int argc, char** argv)
@@ -76,7 +108,7 @@ int main(int argc, char** argv)
    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
    glutInitWindowSize (500, 500); 
    glutInitWindowPosition (100, 100);
-   glutCreateWindow (argv[0]);
+   _win = glutCreateWindow (argv[0]);
    init ();
    glutDisplayFunc(display); 
    glutReshapeFunc(reshape);

@@ -31,7 +31,7 @@
 				},
 				{
 					"name": "Make",
-					"shell_cmd": "make all -j 8 BUILD_SHARED_LIBS=ON"
+					"shell_cmd": "make all -j 8"
 				},
 				{
 					"name": "Clean & Make",

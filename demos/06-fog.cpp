@@ -9,18 +9,22 @@
  *  as fixed start and end values for the linear fog.
  */
 #include <cstdlib>
+#include <cstdio>
 #include <cmath>
 #include <GL/glut.h>
 
 GLint fogMode;
+float _fogstart = 1.0;
+float _fogend = 5.0;
 
 void 
 selectFog(int mode)
 {
+    fogMode = mode;
     switch(mode) {
     case GL_LINEAR:
-        glFogf(GL_FOG_START, 1.0);
-        glFogf(GL_FOG_END, 5.0);
+        glFogf(GL_FOG_START, _fogstart);
+        glFogf(GL_FOG_END, _fogend);
 	/* falls through */
     case GL_EXP2:
     case GL_EXP:
@@ -92,8 +96,7 @@ renderRedTeapot(GLfloat x, GLfloat y, GLfloat z)
 
 /*  display() draws 5 teapots at different z positions.
  */
-void 
-display(void)
+void display(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderRedTeapot(-4.0, -0.5, -1.0);
@@ -104,8 +107,31 @@ display(void)
     glFlush();
 }
 
-void 
-myReshape(int w, int h)
+void onKey(unsigned char key, int x, int y)
+{
+    switch(key)
+    {
+        case '[': _fogstart -= 0.2; break;
+        case '-': _fogend -= 0.2; break;
+        case ']': _fogstart += 0.2; break;
+        case '=': _fogend += 0.2; break;
+        case 'l': selectFog(GL_LINEAR); break;
+        case 'e': selectFog(GL_EXP); break;
+        case '2': selectFog(GL_EXP2); break;
+        case 'x': 
+        case '\27': 
+        exit(0);
+    }
+    if(fogMode==GL_LINEAR)
+    {
+        printf("[%.2f, %.2f]\n", _fogstart, _fogend);
+        glFogf(GL_FOG_START, _fogstart);
+        glFogf(GL_FOG_END, _fogend);
+    }
+    glutPostRedisplay();
+}
+
+void myReshape(int w, int h)
 {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
@@ -124,8 +150,7 @@ myReshape(int w, int h)
  *  Open window with initial window size, title bar, 
  *  RGBA display mode, depth buffer, and handle input events.
  */
-int 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
@@ -133,6 +158,7 @@ main(int argc, char **argv)
     glutCreateWindow(argv[0]);
     myinit();
     glutReshapeFunc(myReshape);
+    glutKeyboardFunc(onKey);
     glutDisplayFunc(display);
     glutCreateMenu(selectFog);
     glutAddMenuEntry("Fog EXP", GL_EXP);

@@ -1053,12 +1053,6 @@ Table 6-1 Source & Destination 混合因数的计算，加减号表示对应分�
 
 这就使用使用来源的像素覆盖目标像素，因为来源因子全是 1 表示完全保留，目标因子全是 0 表示被覆盖。
 
-Example 6-1 : Blending Example: alpha.c 绘制两个三角形演示了混合因子对混合结果的影响。
-
-Example 6-2 : Three-Dimensional Blending: alpha3D.c 展示 3D 混合，其中使用了显示列表 Display List。
-
-Example 6-3 : Antialiased lines: aargb.c 展示了抗锯齿效果。
-
 
 Table 6-2 在 glHint(target, hint) 使用的常量
 
@@ -1069,4 +1063,11 @@ Table 6-2 在 glHint(target, hint) 使用的常量
 | GL_PERSPECTIVE_CORRECTION_HINT | 指定颜色或纹理插值的质量                            |
 | GL_POINT_SMOOTH_HINT           | 指定顶点采样质量                                    |
 | GL_POLYGON_SMOOTH_HINT         | 指定多边形采样质量                                  |
+
+
+参考例子：
+
+- Example 6-1 : Blending Example: alpha.c 绘制两个三角形演示了混合因子对混合结果的影响。
+- Example 6-2 : Three-Dimensional Blending: alpha3D.c 展示 3D 混合，其中使用了显示列表 Display List。
+- Example 6-3 : Antialiased lines: aargb.c 展示了抗锯齿效果。
 
