@@ -84,6 +84,9 @@ void keyboard(unsigned char key, int x, int y)
 		case '2':
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			break;
+        case '3':
+            glBlendFunc (GL_SRC_ALPHA, GL_ONE);
+            break;
         case 't':
         case 'T':
             leftFirst = !leftFirst;

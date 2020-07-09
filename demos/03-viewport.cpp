@@ -127,6 +127,7 @@ void init(void)
 {
 	glClearColor (0.0, 0.0, 0.0, 0.0);
 	glShadeModel (GL_FLAT);
+	glEnable(GL_DEPTH_TEST);
 	initLights();
 }
 
@@ -147,7 +148,8 @@ static void bitmapPrintf (const char *fmt, ...)
 
 void display(void)
 {
-	glClear (GL_COLOR_BUFFER_BIT);
+	// glClear (GL_COLOR_BUFFER_BIT);
+	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColor3f (1.0, 1.0, 1.0);
 
 	/* set raster position acording to viewport for bitmap string */
@@ -224,7 +226,8 @@ void onKey(unsigned char key, int x, int y)
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
-	glutInitDisplayMode (GLUT_SINGLE | GLUT_RGBA);
+	// glutInitDisplayMode (GLUT_SINGLE | GLUT_RGBA);
+	glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize (500, 500); 
 	glutInitWindowPosition (100, 100);
 	glutCreateWindow (argv[0]);

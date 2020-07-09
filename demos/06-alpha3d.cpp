@@ -92,13 +92,15 @@ void reshape(int w, int h)
    glLoadIdentity();
 }
 
-void animate(void)
+void animate(int id)
 {
    if (solidZ <= MINZ || transparentZ >= MAXZ)
-      glutIdleFunc(NULL);
-   else {
+   {
+      // glutIdleFunc(NULL);
+   } else {
       solidZ -= ZINC;
       transparentZ += ZINC;
+      glutTimerFunc(80, animate, 1);
       glutPostRedisplay();
    }
 }
@@ -110,7 +112,7 @@ void keyboard(unsigned char key, int x, int y)
       case 'A':
          solidZ = MAXZ;
          transparentZ = MINZ;
-         glutIdleFunc(animate);
+         glutTimerFunc(50, animate, 1);
          break;
       case 'r':
       case 'R':
