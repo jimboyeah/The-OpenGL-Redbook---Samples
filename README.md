@@ -1071,3 +1071,228 @@ Table 6-2 在 glHint(target, hint) 使用的常量
 - Example 6-2 : Three-Dimensional Blending: alpha3D.c 展示 3D 混合，其中使用了显示列表 Display List。
 - Example 6-3 : Antialiased lines: aargb.c 展示了抗锯齿效果。
 
+
+## Chapter 07 Display Lists
+- http://www.glprogramming.com/red/chapter07.html
+
+学习目标：
+
+- 理解显示列表如果在 OpenGL 立即模式下组织数据；
+- 如何利用显示列表最优化性能；
+
+显示列表可以用来保存一组 OpenGL 命令，在后续执行以提高性能。
+
+基本使用流程，先在初始化过程定义显示列表，可以嵌套，然后在后续重绘渲染时执行：
+
+    static void init(void)
+    {
+       theTorus = glGenLists (1);
+       glNewList(theTorus, GL_COMPILE);
+       // glVertex3f ...
+       // glCallList(frame); call another
+       glEndList();
+
+       glShadeModel(GL_FLAT);
+       glClearColor(0.0, 0.0, 0.0, 0.0);
+    }
+
+    /* Clear window and draw torus */
+    void display(void)
+    {
+       glClear(GL_COLOR_BUFFER_BIT);
+       glColor3f (1.0, 1.0, 1.0);
+       glCallList(theTorus);
+       glFlush();
+    }
+
+经过显示列表的优化，比如原先需要执行三角函数和开平方根的旋转操作，优化后只需要存储最终的变换矩阵，可以像硬件一样快速执行 `glMultMatrix*()`。
+
+并非所有 OpenGL 命令都支持显示列表，以下这部分是支持的：
+
+    | glColorPointer()       | glGet*()              | glSelectBuffer()    |
+    | glFlush()              | glReadPixels()        | glFeedbackBuffer()  |
+    | glNormalPointer()      | glEdgeFlagPointer()   | glIsEnabled()       |
+    | glDeleteLists()        | glIndexPointer()      | glTexCoordPointer() |
+    | glGenLists()           | glRenderMode()        | glFinish()          |
+    | glPixelStore()         | glEnableClientState() | glIsList()          |
+    | glDisableClientState() | glInterleavedArrays() | glVertexPointer()   |
+
+可以删除已经定义的显示列表：
+
+    GLboolean glIsList(GLuint list);
+
+
+示例：
+
+- Example 7-1 : Creating a Display List: torus.c
+- Example 7-2 : Using a Display List: list.c
+- Example 7-5 : Multiple Display Lists to Define a Stroked Font: stroke.c
+
+例 7-5 展示了 glCallLists 多次调用显示列表来打印字符，此示例没有使用字符，而是通过定点连线的方式显示字符，提供了一个文字显示方法的参考。通过预定义 6 x 11 点阵字符 A, E, P, R, S 数据，根据字符的复杂度定义不同的取样点，还定义了三个常量 PT、STROKE、END 表示字符中的采样点、断笔位置和符号结束点。
+
+先是初始化显示列表，注意这里使用的偏移和字符关联起来了：
+
+    GLuint base;
+
+    glShadeModel (GL_FLAT);
+
+    base = glGenLists (128);
+    glListBase(base);
+    glNewList(base+'A', GL_COMPILE); drawLetter(Adata); glEndList();
+    glNewList(base+'E', GL_COMPILE); drawLetter(Edata); glEndList();
+    glNewList(base+'P', GL_COMPILE); drawLetter(Pdata); glEndList();
+    glNewList(base+'R', GL_COMPILE); drawLetter(Rdata); glEndList();
+    glNewList(base+'S', GL_COMPILE); drawLetter(Sdata); glEndList();
+    glNewList(base+' ', GL_COMPILE); glTranslatef(8.0, 0.0, 0.0); glEndList();
+
+API 原型：
+
+    void glListBase(GLuint base);
+    void glCallLists(GLsizei n, GLenum type, const GLvoid *lists);
+
+然后，再使用多次执行显示列表的方式将字符打印出来，调用显示列表时，将字符串传入，OpenGL 会逐一字节执行，而且，每个字节的值是作为显示列表的号码使用的，也即调用了前面用字符关联起来的显示列表：
+
+    glCallLists(len, GL_BYTE, (GLbyte *)s);
+
+注意 drawLetter 这个方法，它负责将预定义的字符数据按连线方式 GL_LINE_STRIP 绘图，glVertex2fv 接收坐标数据的指针：
+
+    void drawLetter(CP *l)
+    {
+        glBegin(GL_LINE_STRIP);
+        for (;;) {
+        switch (l->type) {
+            case PT:
+            glVertex2fv(&l->x);
+            break;
+            case STROKE:
+            glVertex2fv(&l->x);
+            glEnd();
+            glBegin(GL_LINE_STRIP);
+            break;
+            case END:
+            glVertex2fv(&l->x);
+            glEnd();
+            glTranslatef(8.0, 0.0, 0.0);
+            return;
+        }
+        l++;
+        }
+    }
+
+例如，可以这样定义一个感叹号：
+
+    CP EMdata[] = {
+        {3, 10, PT}, {3, 3, STROKE}, {3, 1, PT}, {3, 0, END}
+    };
+
+
+## Chapter 8 Drawing Pixels, Bitmaps, Fonts, and Images
+
+学习目标：
+
+- 定位与绘制图像数据；
+- 从 frame buffer 读取位图及图像到处理器，或从内存到 frame buffer；
+- 在不同的 frame buffer 间拷贝像素色彩数据；
+- 在写入 frame buffer 时缩放图像；
+- 在 frame buffer 间处理图像时，控制像素格式以及进行其它变换；
+
+绘制图像前通常需要指定光栅位置：
+
+    void glRasterPos{234}{sifd}(TYPE x, TYPE y, TYPE z, TYPE w);
+    void glRasterPos{234}{sifd}v(TYPE *coords);
+
+    void glBitmap(  GLsizei width,
+        GLsizei height,
+        GLfloat xorig,
+        GLfloat yorig,
+        GLfloat xmove,
+        GLfloat ymove,
+        const GLubyte * bitmap);
+
+图像绘制除了指定宽高像素外，还要指定：
+
+- xorig, yorig 图像原点坐标，位图以左下角为 0 点坐标，右上角为正；
+- xmove, ymove 在绘图完成后，对当前光栅位置的增量；
+- bitmap 指定像素数据地址；
+
+例如，以下表示绘制一个 10 x 12 像素的图像，然后将光栅位置右移 11.0：
+
+    glBitmap (10, 12, 0.0, 0.0, 11.0, 0.0, rasters);
+
+在光栅定位前，可以位图设置颜色，glRasterPos 之前设置的颜色在本次绘图生成，之后设置的颜色在下回绘图时才有效。
+
+如果光栅位置超出显示区域，则不会渲染，并且光栅位置保持无效状态，通过以下 API 确认光栅位置有效性：
+
+    glGetFloatv(GL_CURRENT_RASTER_POSITION, pointer_x_y_z_w);
+    glGetBooleanv(GL_CURRENT_RASTER_POSITION_VALID);
+
+glBitmap 这个方法绘制的像素只是一个 bit 位，以下光栅 bit 数据定义，可以通过相应的 bit 位看到，置位的部分对应了一个 倒 F 字符：
+
+    GLubyte rasters[24] = {
+       0xc0, 0x00, 0xc0, 0x00, 0xc0, 0x00, 0xc0, 0x00, 0xc0, 0x00,
+       0xff, 0x00, 0xff, 0x00, 0xc0, 0x00, 0xc0, 0x00, 0xc0, 0x00,
+       0xff, 0x00, 0xff, 0x00};
+
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+
+    1111 1111 0000 0000 
+    1111 1111 0000 0000 
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+    1100 0000 0000 0000 
+
+    1111 1111 0000 0000 
+    1111 1111 0000 0000 
+
+虽然，数据中每一行有两个字节，但是给 glBitmap 指定的宽度是 10 像素宽度，只使用了其中的 10-bit，剩下的被丢弃了。
+
+在 Chapter 07 中，通过 glCallLists() 巧妙实现了字符的打印，这就是 Raster Font 光栅字体的应用。对于西方文字通常在 256 个字符以内，这个方法很好使，参考 font.c 示例定义了 26 个字母的光栅字体，8 x 13 像素。
+
+对于更长到 4 个字节的字符集，glCallLists() 也可以在参数中指定以下类型来实现，由于汉字的复杂度使用得光栅字体的像素也需要更多，：
+
+| GL_BYTE    | GL_UNSIGNED_BYTE  |
+| GL_SHORT   | GL_UNSIGNED_SHORT |
+| GL_INT     | GL_UNSIGNED_INT   |
+| GL_FLOAT   | GL_2_BYTES        |
+| GL_3_BYTES | GL_4_BYTES        |
+
+例如，第一个字母 A 和中国两字对应的光栅如下，同样的点阵，汉字明显不够用，想要好点的效果，12 bit 宽度是必需的：
+
+    0000 0000  0001 1000 1111 1111
+    1100 0011  0001 1000 1000 0001
+    1100 0011  0001 1000 1111 1111
+    1100 0011  0001 1000 1011 1001
+    1100 0011  0001 1000 1101 1011
+    1111 1111  1111 1111 1001 1001
+    1100 0011  1001 1001 1001 1001
+    1100 0011  1001 1001 1011 1101
+    1100 0011  1001 1001 1001 1001
+    1100 0011  1111 1111 1001 1001
+    0110 0110  0001 1000 1011 1101
+    0011 1100  0001 1000 1000 0001
+    0001 1000  0001 1000 1111 1111
+
+示例：
+
+- Example 8-1 : Drawing a Bitmapped Character: drawf.c
+- Example 8-2 : Drawing a Complete Font: font.c
+- Example 8-3 : Use of glDrawPixels(): image.c
+- Example 8-4 : Drawing, Copying, and Zooming Pixel Data: image.c
+
+

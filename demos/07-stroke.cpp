@@ -84,6 +84,7 @@ void myinit (void)
 	glShadeModel (GL_FLAT);
 
 	base = glGenLists (128);
+	printf("display list base: %d\n", base);
 	glListBase(base);
 	glNewList(base+'A', GL_COMPILE); drawLetter(Adata); glEndList();
 	glNewList(base+'E', GL_COMPILE); drawLetter(Edata); glEndList();
